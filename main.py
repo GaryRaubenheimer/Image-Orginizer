@@ -90,6 +90,35 @@ def ImageChanged():
         print("select item")
 
 
+def MoveImage():
+    print("move")
+    OldImgPath = GetImagePath(str(root.imageListbox.get(root.imageListbox.curselection())))
+    NewImgPath = os.path.join(WorkingDir, root.folderButton['text'])
+    shutil.move(OldImgPath, NewImgPath)
+
+
+def CreateNewFolder(FolderName):
+    # Path
+    NewFolderPath = os.path.join(WorkingDir, FolderName)
+
+    # Create the directory
+    # 'Nikhil'
+    try:
+        os.makedirs(NewFolderPath, exist_ok=True)
+        print("Directory '%s' created successfully" % FolderName)
+    except OSError as error:
+        print("Directory '%s' can not be created" % FolderName)
+
+
+def AddButton():
+
+    if root.folderName.get() not in folderButtonList:
+        folderButtonList.append(root.folderName.get())
+        root.folderButton = Button(root.frame2, text=root.folderName.get(), command=MoveImage)
+        root.folderButton.pack(side="bottom", fill="both", expand="yes")
+        CreateNewFolder(root.folderName.get())
+
+
 class ImageOrganizer(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -123,15 +152,22 @@ class ImageOrganizer(tk.Frame):
         root.panel = tk.Label(root.frame_img, text="IMAGE")
         root.panel.pack(side="bottom", fill="both", expand="yes")
 
-        # create listbox in frame1
-        root.imageListbox = Listbox(root.frame1)
+        # create widgets in frame1
+        root.WorkingDir = tk.Entry(root.frame1, text="Working Directory")
+        root.WorkingDir.pack(side="top", fill="both", expand="yes")
+        root.sb1 = Scrollbar(root.frame1)
+        root.sb1.pack(side="right", fill="both", expand="yes")
+        root.imageListbox = Listbox(root.frame1, yscrollcommand=root.sb1.set)
         root.imageListbox.pack(side="bottom", fill="both", expand="yes")
         root.imageSelection = None
+        root.sb1.config(command=root.imageListbox.yview)
 
+        # create widgets in frame 2
+        root.folderName = tk.Entry(root.frame2, text="add folder")
+        root.folderName.pack(side="top", fill="both", expand="yes")
+        root.folderButton = Button(root.frame2, text="+", command=AddButton)
+        root.folderButton.pack(side="bottom", fill="both", expand="yes")
 
-"""
-def test():
-"""
 
 if __name__ == '__main__':
     root = tk.Tk()
@@ -139,9 +175,10 @@ if __name__ == '__main__':
     width = root.winfo_screenwidth() - 100
     height = root.winfo_screenheight() - 100
 
+    folderButtonList = []
+
     app = ImageOrganizer(root)
     GetImageList()
-    # currSelection = root.imageListbox.curselection()
 
     while TRUE:
         # use left mouse click on a list item to display selection
